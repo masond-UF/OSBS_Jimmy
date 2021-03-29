@@ -61,13 +61,16 @@ clean_dat$treatment <- as.factor(clean_dat$treatment)
 sps_count_by_treat <- clean_dat %>% 
   group_by(treatment, species) %>% 
   summarise(count = n())
-sps_count_by_treat  
+sps_count_by_treat 
+
 
 # count of individual species by treatment and site
 sps_count_by_treat_site <- clean_dat %>% 
   group_by(treatment, site, species) %>% 
   summarise(count = n())
 sps_count_by_treat_site
+
+
 
 # H2
 # total count of individuals by treatment
@@ -95,29 +98,54 @@ hist(total_count_by_treat_site$count)
 ##### ANALYSES #####
 ####################
 
+richness <- sps_count_by_treat_site %>% 
+        group_by(treatment,site) %>% 
+        summarise(richness = n())
+
+
+rich_mean <- richness %>% 
+        group_by(treatment) %>% 
+	      summarise(MEAN = mean(richness), SD = sd(richness)) %>% 
+	      mutate(SE = SD/(sqrt(10)))
+
 ### effect of food diversity (ie treatment) on bird abundance ###
-summary(aov(data = sps_count_by_treat_site, formula = count ~ treatment))
-TukeyHSD(aov(data = sps_count_by_treat_site, formula = count ~ treatment))
+summary(aov(data = richness, formula = richness ~ treatment))
+TukeyHSD(aov(data = richness, formula = richness ~ treatment))
 
 summary(aov(data = total_count_by_treat_site, formula = count ~ treatment))
 TukeyHSD(aov(data = total_count_by_treat_site, formula = count ~ treatment))
 
-ggplot(data = sps_count_by_treat_site, 
-       aes(x = treatment, y = count)) +
-  geom_point(alpha = 0.3) +
-  ylab("Bird Abundance") + 
-  xlab("Food Diversity") +
-  theme_bw()
+bird_abund <- ggplot(data = total_count_by_treat_site, 
+       aes(x = treatment, y = count, color = treatment)) +
+  geom_jitter(alpha = 0.4, size = 4, 
+              width = 0.3, height = 0.2) +
+  ylab("Bird Observations") + 
+  xlab("Food Richness (# of Resources)")+
+  theme_bw()+
+  theme(text = element_text(size = 15))+
+  theme(legend.position = "none")+
+  scale_y_continuous(limits = c(0,300), breaks = c(0,100,200,300))+
+  theme(plot.margin = unit(c(1,1.5,1,1), "cm"))
 
-ggplot(data = sps_count_by_treat_site, 
-       aes(x = treatment, y = count, color = species)) +
-  geom_point(alpha = 0.7) +
-  facet_wrap(~ species) +
-  labs(color = "Species") +
-  ylab("Bird Abundance") + 
-  xlab("Food Diversity") +
-  theme_bw() +
-  theme(legend.position = "none")
+bird_rich <- ggplot(data = richness, 
+       aes(x = treatment, y = richness, color = treatment)) +
+  geom_jitter(alpha = 0.4, size = 4, 
+              width = 0.3, height = 0.2) +
+  ylab("Bird Richness") + 
+  xlab("Food Richness (# of Resources)")+
+  theme_bw()+
+  theme(text = element_text(size = 15))+
+  theme(legend.position = "none")+
+  scale_y_continuous(limits = c(0.8,3.2),
+                     breaks = c(1,2,3))+
+  theme(plot.margin = unit(c(1,1.5,1,1), "cm"))
+
+
+library(ggpubr)
+library(cowplot)
+library(gridExtra)
+
+grid.arrange(bird_abund, bird_rich, nrow = 1)
 
 
 fit <- glmer.nb(count ~ treatment + (1 | site), 
