@@ -145,7 +145,8 @@ library(ggpubr)
 library(cowplot)
 library(gridExtra)
 
-grid.arrange(bird_abund, bird_rich, nrow = 1)
+labs <- c("a","b")
+grid.arrange(bird_rich, bird_abund, nrow = 1)
 
 
 fit <- glmer.nb(count ~ treatment + (1 | site), 

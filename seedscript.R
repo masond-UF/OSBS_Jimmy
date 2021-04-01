@@ -132,7 +132,7 @@ seed_abund <- ggplot(data = total_count_by_treat_site,
 total_count_by_treat_site$TREATMENT <- factor(total_count_by_treat_site$TREATMENT, 
 																		levels=c('Control', 'Low', 'Medium', 'High'))
 
-grid.arrange(seed_abund, seed_rich, nrow = 1)
+grid.arrange(seed_rich, seed_abund, nrow = 1)
 
 
 ### tylers way of doing bird richness
