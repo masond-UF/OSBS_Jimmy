@@ -1,8 +1,8 @@
 ##### JIMMY HOLDGRAFER ###########
 ##### SEED DISPERSAL PROJECT #####
 
-# H01: as food diversity increases, bird diversity increases
-# H02: as food diversity increases, bird abundance increases
+# H01: as food diversity increases, bird and seed richness increase
+# H02: as food diversity increases, bird and seed observations increase
 
 ####################
 ##### PACKAGES #####
@@ -81,6 +81,9 @@ bird.obs <- bird.clean %>%
   group_by(site, treatment) %>% 
   summarise(count = n())
 
+bird.obs <- bird.obs %>% 
+	select(treatment,site,count)
+
 missing <- data.frame(site = "six", 
 											treatment = "4",
 											count = 0)
@@ -97,6 +100,8 @@ bird.rich <- as.data.frame(cbind(sites,treatment))
 bird.rich$richness <- c(2,2,3,3,2,2,2,3,3,3,4,4,3,3,3,3,4,4,5,5,
 									 2,0,2,1,1,2,2,1,4,4,4,4,2,2,2,2,1,1,1,1)
 bird.rich$treatment <- as.factor(bird.rich$treatment)
+bird.rich <- bird.rich %>% 
+	select(treatment,sites,richness)
 
 # Seeds
 seed.obs <- seed.dat %>% 
@@ -120,6 +125,8 @@ seed.species.count <- seed.species.count %>%
 seed.rich <- as.data.frame(cbind(sites,treatment))
 seed.rich$richness <- c(1,2,5,2,0,0,0,2,1,0,0,5,0,3,4,3,0,2,2,3,
 												1,1,2,2,1,1,1,1,0,1,1,3,0,0,4,4,2,0,0,0)
+seed.rich <- seed.rich %>% 
+	select(treatment,sites,richness)
 
 ##########################
 ######### MODEL ##########
@@ -373,6 +380,7 @@ levels(means$treatment)[levels(means$treatment)=="0"] <- "Control"
 levels(means$treatment)[levels(means$treatment)=="4"] <- "Low"
 levels(means$treatment)[levels(means$treatment)=="8"] <- "Medium"
 levels(means$treatment)[levels(means$treatment)=="12"] <- "High"
+means$treatment <- as.factor(means$treatment)
 
 ggplot(means, aes(x = treatment, y = mean))+
 	geom_linerange(aes(ymin=asymp.LCL, ymax=asymp.UCL))+
@@ -397,4 +405,41 @@ ggplot(means, aes(x = treatment, y = mean))+
 	xlab("Treatment")+
 	geom_smooth()+
 	facet_wrap(~analysis, scales="free")
+
+seed.obs$TREATMENT <- as.factor(seed.obs$TREATMENT)
+levels(seed.obs$TREATMENT)[levels(seed.obs$TREATMENT)=="Control"] <- "0"
+levels(seed.obs$TREATMENT)[levels(seed.obs$TREATMENT)=="Low"] <- "4"
+levels(seed.obs$TREATMENT)[levels(seed.obs$TREATMENT)=="Medium"] <- "8"
+levels(seed.obs$TREATMENT)[levels(seed.obs$TREATMENT)=="High"] <- "12"
+seed.obs$TREATMENT <- as.numeric(as.character(seed.obs$TREATMENT))
+seed.obs$BLOCK <- as.factor(seed.obs$BLOCK)
+colnames(seed.obs) <- c("TREATMENT", "BLOCK", "VALUE")
+seed.obs$ANALYSIS <- "Seed observations"
+
+colnames(seed.rich) <- c("TREATMENT", "BLOCK", "VALUE")
+seed.rich$ANALYSIS <- "Seed richness"
+seed.rich$TREATMENT <- as.numeric(as.character(seed.rich$TREATMENT))
+seed.rich$BLOCK <- as.factor(seed.rich$BLOCK)
+
+colnames(bird.obs) <- c("TREATMENT", "BLOCK", "VALUE")
+bird.obs$TREATMENT <- as.numeric(as.character(bird.obs$TREATMENT))
+bird.obs$ANALYSIS <- "Bird observations"
+bird.obs$BLOCK <- as.factor(bird.obs$BLOCK)
+
+colnames(bird.rich) <- c("TREATMENT", "BLOCK", "VALUE")
+bird.rich$ANALYSIS <- "Bird richness"
+bird.rich$TREATMENT <- as.numeric(as.character(bird.rich$TREATMENT))
+bird.rich$BLOCK <- as.factor(bird.rich$BLOCK)
+
+
+comb <- rbind(seed.obs,seed.rich,bird.obs,bird.rich)
+
+ggplot(comb, aes(x = TREATMENT, y = VALUE))+
+	geom_smooth(method="lm")+
+	facet_wrap(~ANALYSIS, scales = "free")
+
+ggplot(comb, aes(x = TREATMENT, y = VALUE))+
+	geom_point()+
+	geom_smooth(method="lm")+
+	facet_wrap(~ANALYSIS, scales = "free")
 
