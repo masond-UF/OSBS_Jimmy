@@ -227,9 +227,6 @@ AIC(glm.bird.obs,glmm.bird.obs,glmm.ovd.bird.obs,gnb.bird.obs,
 # Test signifigance 
 Anova(glmm.ovd.bird.obs)
 
-
-# Seed richness 
-# Seed obs
 # Seed rich ####
 
 seed.rich$treatment <- as.factor(seed.rich$treatment)
